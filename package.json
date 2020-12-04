@@ -1,0 +1,42 @@
+{
+  "name": "@simplyappdevs/logging-helper",
+  "version": "0.0.1",
+  "description": "Logging helper for Javascript/Typescript",
+  "main": "index.js",
+  "type": "module",
+  "dependencies": {},
+  "devDependencies": {
+    "@types/jest": "^26.0.16",
+    "@types/node": "^14.14.10",
+    "jest": "^26.6.3",
+    "ts-jest": "^26.4.4",
+    "typescript": "^4.1.2"
+  },
+  "scripts": {
+    "tsc": "tsc",
+    "test": "jest",
+    "build:common": "tsc --project tsconfig.json",
+    "build:esm": "tsc --project tsconfig-esm.json",
+    "build:examples": "npm run clean:examples && tsc --project tsconfig-examples.json",
+    "clean": "rm -rf ./dist/*",
+    "clean:examples": "rm -rf ./dist-examples/*",
+    "build": "npm run clean && npm run build:common && npm run build:esm",
+    "exec": " node --experimental-modules --es-module-specifier-resolution=node ./dist-examples/examples/index.js",
+    "prepublishOnly": "npm run clean && npm run test && npm run build"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/simplyappdevs/logging-helper.git"
+  },
+  "keywords": [
+    "logging",
+    "typescript",
+    "javascript"
+  ],
+  "author": "Simply AppDevs",
+  "license": "GPL-3.0",
+  "bugs": {
+    "url": "https://github.com/simplyappdevs/logging-helper/issues"
+  },
+  "homepage": "https://github.com/simplyappdevs/logging-helper#readme"
+}
