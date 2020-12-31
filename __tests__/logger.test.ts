@@ -82,7 +82,7 @@ describe('Logger', () => {
         // expect logging function to throw error
         expect(() => {
           logger.log(LOGTYPES.Informational, 'unittest', 'test()', 'This should not be logged');
-        }).toThrow('simply-logger-error: Logger has not been initialized');
+        }).toThrow('simply-logger-helper: Logger has not been initialized');
       });
 
       /**
@@ -362,6 +362,314 @@ describe('Logger', () => {
         expect(mockLoggerSpy).toHaveBeenCalledTimes(2);
         expect(mockLoggerSpy).toHaveBeenNthCalledWith(1, expect.objectContaining({'friendlyMsg': 'First Log'}));
         expect(mockLoggerSpy).toHaveBeenNthCalledWith(2, expect.objectContaining({'friendlyMsg': 'Second Log'}));
+      });
+    });
+
+    /**
+     * Wrapper functions
+     */
+    describe('Wrapper Functions', () => {
+      describe('Module Wrapper', () => {
+        test('wrap module', () => {
+          logger.init(appName);
+          logger.setLoggerOutput(mocks.loggerOutput); // easier to test since arg is passed in as JSON
+
+          const modLogger = logger.createModuleLogger('mod-test');
+          expect(modLogger).toBeDefined();
+          expect(modLogger.logger).toBeDefined();
+          expect(modLogger.logger.appName()).toBe(appName.toUpperCase());
+
+          modLogger.log(LOGTYPES.Informational, 'mod-test-fn', 'First Log');
+          expect(mockLoggerSpy).toHaveBeenCalledTimes(1);
+          expect(mockLoggerSpy).toHaveBeenCalledWith(expect.objectContaining({
+            logType: LOGTYPES.Informational,
+            modName: 'mod-test',
+            fnName: 'mod-test-fn',
+            friendlyMsg: 'First Log'
+          }));
+
+          modLogger.logDebug('mod-test-fn', 'First Log');
+          expect(mockLoggerSpy).toHaveBeenCalledTimes(2);
+          expect(mockLoggerSpy).toHaveBeenCalledWith(expect.objectContaining({
+            logType: LOGTYPES.Debug,
+            modName: 'mod-test',
+            fnName: 'mod-test-fn',
+            friendlyMsg: 'First Log'
+          }));
+
+          modLogger.logInfo('mod-test-fn', 'First Log');
+          expect(mockLoggerSpy).toHaveBeenCalledTimes(3);
+          expect(mockLoggerSpy).toHaveBeenCalledWith(expect.objectContaining({
+            logType: LOGTYPES.Informational,
+            modName: 'mod-test',
+            fnName: 'mod-test-fn',
+            friendlyMsg: 'First Log'
+          }));
+
+          modLogger.logWarning('mod-test-fn', 'First Log');
+          expect(mockLoggerSpy).toHaveBeenCalledTimes(4);
+          expect(mockLoggerSpy).toHaveBeenCalledWith(expect.objectContaining({
+            logType: LOGTYPES.Warning,
+            modName: 'mod-test',
+            fnName: 'mod-test-fn',
+            friendlyMsg: 'First Log'
+          }));
+
+          modLogger.logError('mod-test-fn', 'First Log');
+          expect(mockLoggerSpy).toHaveBeenCalledTimes(5);
+          expect(mockLoggerSpy).toHaveBeenCalledWith(expect.objectContaining({
+            logType: LOGTYPES.Error,
+            modName: 'mod-test',
+            fnName: 'mod-test-fn',
+            friendlyMsg: 'First Log'
+          }));
+
+          modLogger.logCriticalError('mod-test-fn', 'First Log');
+          expect(mockLoggerSpy).toHaveBeenCalledTimes(6);
+          expect(mockLoggerSpy).toHaveBeenCalledWith(expect.objectContaining({
+            logType: LOGTYPES.CriticalError,
+            modName: 'mod-test',
+            fnName: 'mod-test-fn',
+            friendlyMsg: 'First Log'
+          }));
+        });
+
+        test('get module', () => {
+          logger.init(appName);
+          expect(logger.getLoggerForModule('mod-test')).not.toBeDefined();
+
+          logger.createModuleLogger('mod-test');
+          const modLogger = logger.getLoggerForModule('mod-test');
+
+          expect(modLogger).toBeDefined();
+          expect(modLogger!.moduleName).toBe('mod-test');
+        });
+
+        test('wrap multiple modules', () => {
+          logger.init(appName);
+          logger.setLoggerOutput(mocks.loggerOutput);
+
+          logger.createModuleLogger('mod-test');
+          logger.createModuleLogger('mod-test-2');
+
+          expect(logger.getLoggerForModule('mod-test-3')).not.toBeDefined();
+
+          const modLogger1 = logger.getLoggerForModule('mod-test');
+          expect(modLogger1).toBeDefined();
+          expect(modLogger1!.moduleName).toBe('mod-test');
+
+          const modLogger2 = logger.getLoggerForModule('mod-test-2');
+          expect(modLogger2).toBeDefined();
+          expect(modLogger2!.moduleName).toBe('mod-test-2');
+
+          modLogger2!.logError('test-fn', 'First Log');
+          expect(mockLoggerSpy).toHaveBeenCalledTimes(1);
+          expect(mockLoggerSpy).toHaveBeenCalledWith(expect.objectContaining({
+            logType: LOGTYPES.Error,
+            modName: 'mod-test-2',
+            fnName: 'test-fn',
+            friendlyMsg: 'First Log'
+          }));
+
+          modLogger1!.logWarning('test-fn', 'First Log');
+          expect(mockLoggerSpy).toHaveBeenCalledTimes(2);
+          expect(mockLoggerSpy).toHaveBeenCalledWith(expect.objectContaining({
+            logType: LOGTYPES.Warning,
+            modName: 'mod-test',
+            fnName: 'test-fn',
+            friendlyMsg: 'First Log'
+          }));
+        });
+
+        test('object chaining', () => {
+          logger.init(appName).setLoggerOutput(mocks.loggerOutput).createModuleLogger('mod-test').logDebug('test-fn', 'First Log').logWarning('test-fn', 'Second Log');
+
+          expect(mockLoggerSpy).toHaveBeenCalledTimes(2);
+          expect(mockLoggerSpy).toHaveBeenNthCalledWith(1, expect.objectContaining({
+            logType: LOGTYPES.Debug,
+            modName: 'mod-test',
+            fnName: 'test-fn',
+            friendlyMsg: 'First Log'
+          }));
+          expect(mockLoggerSpy).toHaveBeenNthCalledWith(2, expect.objectContaining({
+            logType: LOGTYPES.Warning,
+            modName: 'mod-test',
+            fnName: 'test-fn',
+            friendlyMsg: 'Second Log'
+          }));
+        });
+
+        test('validations', () => {
+          logger.init(appName);
+
+          expect(() => {
+            logger.createModuleLogger('');
+          }).toThrow('simply-logger-helper: Missing module name');
+
+          const modLogger1 = logger.createModuleLogger('mod-test');
+          expect(modLogger1).toBeDefined();
+
+          const modLogger2 = logger.createModuleLogger('mod-test');
+          expect(modLogger2).toBeDefined();
+
+          expect(modLogger1).toEqual(modLogger2);
+        });
+      });
+
+      describe('Function Wrapper', () => {
+        test('dependency with module logger', () => {
+          logger.init(appName);
+
+          expect(() => {
+            logger.createFnLogger('mod-test', 'fn-test');
+          }).toThrow(`simply-logger-helper: No logger exist for module mod-test`);
+
+          logger.createModuleLogger('mod-test');
+          expect(logger.createFnLogger('mod-test', 'fn-test')).toBeDefined();
+
+          const modLogger = logger.getLoggerForModule('mod-test');
+          expect(modLogger).toBeDefined();
+
+          modLogger!.createFnLogger('fn-test-3');
+          const fnLogger3 = modLogger!.getLoggerForFn('fn-test-3');
+          expect(fnLogger3).toBeDefined();
+
+          const fnLogger = logger.getLoggerForFn('mod-test', 'fn-test');
+          expect(fnLogger).toBeDefined();
+          expect(fnLogger!.moduleLogger.moduleName).toBe(modLogger!.moduleName);
+
+          const fnLogger2 = modLogger!.getLoggerForFn('fn-test');
+          expect(fnLogger2).toBeDefined();
+          expect(fnLogger2!.moduleLogger.moduleName).toBe(modLogger!.moduleName);
+        });
+
+        test('wrap function', () => {
+          logger.init(appName);
+          logger.setLoggerOutput(mocks.loggerOutput); // easier to test since arg is passed in as JSON
+          logger.createModuleLogger('mod-test');
+
+          const fnLogger = logger.createFnLogger('mod-test', 'mod-test-fn');
+          expect(fnLogger).toBeDefined();
+          expect(fnLogger.logger).toBeDefined();
+          expect(fnLogger.logger.appName()).toBe(appName.toUpperCase());
+          expect(fnLogger.moduleLogger).toBeDefined();
+          expect(fnLogger.moduleLogger.moduleName).toBe('mod-test');
+
+          fnLogger.log(LOGTYPES.Informational, 'First Log');
+          expect(mockLoggerSpy).toHaveBeenCalledTimes(1);
+          expect(mockLoggerSpy).toHaveBeenCalledWith(expect.objectContaining({
+            logType: LOGTYPES.Informational,
+            modName: 'mod-test',
+            fnName: 'mod-test-fn',
+            friendlyMsg: 'First Log'
+          }));
+
+          fnLogger.logDebug('First Log');
+          expect(mockLoggerSpy).toHaveBeenCalledTimes(2);
+          expect(mockLoggerSpy).toHaveBeenCalledWith(expect.objectContaining({
+            logType: LOGTYPES.Debug,
+            modName: 'mod-test',
+            fnName: 'mod-test-fn',
+            friendlyMsg: 'First Log'
+          }));
+
+          fnLogger.logInfo('First Log');
+          expect(mockLoggerSpy).toHaveBeenCalledTimes(3);
+          expect(mockLoggerSpy).toHaveBeenCalledWith(expect.objectContaining({
+            logType: LOGTYPES.Informational,
+            modName: 'mod-test',
+            fnName: 'mod-test-fn',
+            friendlyMsg: 'First Log'
+          }));
+
+          fnLogger.logWarning('First Log');
+          expect(mockLoggerSpy).toHaveBeenCalledTimes(4);
+          expect(mockLoggerSpy).toHaveBeenCalledWith(expect.objectContaining({
+            logType: LOGTYPES.Warning,
+            modName: 'mod-test',
+            fnName: 'mod-test-fn',
+            friendlyMsg: 'First Log'
+          }));
+
+          fnLogger.logError('First Log');
+          expect(mockLoggerSpy).toHaveBeenCalledTimes(5);
+          expect(mockLoggerSpy).toHaveBeenCalledWith(expect.objectContaining({
+            logType: LOGTYPES.Error,
+            modName: 'mod-test',
+            fnName: 'mod-test-fn',
+            friendlyMsg: 'First Log'
+          }));
+
+          fnLogger.logCriticalError('First Log');
+          expect(mockLoggerSpy).toHaveBeenCalledTimes(6);
+          expect(mockLoggerSpy).toHaveBeenCalledWith(expect.objectContaining({
+            logType: LOGTYPES.CriticalError,
+            modName: 'mod-test',
+            fnName: 'mod-test-fn',
+            friendlyMsg: 'First Log'
+          }));
+        });
+
+        test('wrap multiple functions', () => {
+          logger.init(appName);
+          logger.setLoggerOutput(mocks.loggerOutput);
+          logger.createModuleLogger('mod-test');
+
+          expect(logger.createFnLogger('mod-test', 'mod-fn-test')).toBeDefined();
+
+          const modLogger = logger.getLoggerForModule('mod-test');
+          expect(modLogger).toBeDefined();
+
+          modLogger!.createFnLogger('mod-fn-test-2');
+
+          expect(logger.getLoggerForFn('mod-test', 'mod-fn-test-4')).not.toBeDefined();
+          expect(modLogger!.getLoggerForFn('mod-fn-test-4')).not.toBeDefined();
+
+          const fnLogger1 = logger.getLoggerForFn('mod-test', 'mod-fn-test');
+          expect(fnLogger1).toBeDefined();
+          expect(fnLogger1!.fnName).toBe('mod-fn-test');
+
+          const fnLogger2 = modLogger!.getLoggerForFn('mod-fn-test-2');
+          expect(fnLogger2).toBeDefined();
+          expect(fnLogger2!.fnName).toBe('mod-fn-test-2');
+
+          fnLogger2!.logError('First Log');
+          expect(mockLoggerSpy).toHaveBeenCalledTimes(1);
+          expect(mockLoggerSpy).toHaveBeenCalledWith(expect.objectContaining({
+            logType: LOGTYPES.Error,
+            modName: 'mod-test',
+            fnName: 'mod-fn-test-2',
+            friendlyMsg: 'First Log'
+          }));
+
+          fnLogger1!.logWarning('First Log');
+          expect(mockLoggerSpy).toHaveBeenCalledTimes(2);
+          expect(mockLoggerSpy).toHaveBeenCalledWith(expect.objectContaining({
+            logType: LOGTYPES.Warning,
+            modName: 'mod-test',
+            fnName: 'mod-fn-test',
+            friendlyMsg: 'First Log'
+          }));
+        });
+
+        test('validations', () => {
+          logger.init(appName);
+
+          const modLogger = logger.createModuleLogger('mod-test');
+          expect(modLogger).toBeDefined();
+
+          expect(() => {
+            modLogger.createFnLogger('');
+          }).toThrow('simply-logger-helper: Missing function name');
+
+          const fnLogger1 = modLogger.createFnLogger('mod-fn-test');
+          expect(fnLogger1).toBeDefined();
+
+          const fnLogger2 = modLogger.createFnLogger('mod-fn-test');
+          expect(fnLogger2).toBeDefined();
+
+          expect(fnLogger1).toEqual(fnLogger2);
+        });
       });
     });
   });

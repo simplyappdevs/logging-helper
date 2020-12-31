@@ -6,7 +6,7 @@ import bon from './browser-or-node-helper';
 /**
  * App imports
  */
-import {LogEntry, LogEntryWithDuration, Logger, LoggerOutput, LOGTYPES} from './typedefs';
+import {LogEntry, LogEntryWithDuration, Logger, LoggerCollection, LoggerForFn, LoggerForModule, LoggerOutput, LOGTYPES} from './typedefs';
 
 /**
  * Internal logging information definition
@@ -50,6 +50,14 @@ const canLog: () => boolean = () => {
 const defLogger: LoggerOutput = (entry: LogEntry): void => {
   // timestamp: [type]:[module]:[fn] (task) msg
   console.log(`${entry.entryTS.toISOString()}: [${entry.logType.toString()}]:[${entry.modName || '-'}]:[${entry.fnName || '-'}] (${entry.task || '-'}) ${entry.friendlyMsg}`);
+};
+
+/**
+ * Returns standardized message
+ * @param msg  message
+ */
+const createMessage = (msg: string): string => {
+  return `simply-logger-helper: ${msg}`;
 };
 
 // function pointer to the output function
@@ -134,7 +142,7 @@ const createInternalLogEntry = (logType: LOGTYPES, fnName: string, msg: string |
 const log = (logType: LOGTYPES, modName: string, fnName: string, msg: string | Error, detailMsg?: string, task?: string): Logger => {
   // validate if we can log
   if (!canLog()) {
-    throw new Error('simply-logger-error: Logger has not been initialized');
+    throw new Error(createMessage('Logger has not been initialized'));
   }
 
   const logEntry: LogEntry = createLogEntry(logType, modName, fnName, msg, detailMsg, task);
@@ -213,10 +221,155 @@ const logCriticalError = (modName: string, fnName: string, msg: string | Error, 
   return logger;
 };
 
-const wrapModule = () => { };
+// collection of module level loggers
+const modWrappers: LoggerCollection<LoggerForModule> = {
+  coll: new Map(),
+  buildCollKey: (modName: string, fnName?: string) => {
+    // validate
+    modName = modName.trim();
+    fnName = fnName || '';      // we are ignoring this parameter
 
-const wrapFnName = () => { };
+    if (modName === '') {
+      throw new Error(createMessage('Missing module name'));
+    }
 
+    return `MOD[${modName.toUpperCase()}]`;
+  },
+  createLogger: (modName: string, fnName?: string) => {
+    // get existing
+    const collKey = modWrappers.buildCollKey(modName, fnName);
+
+    let modLogger = modWrappers.coll.get(collKey);
+
+    if (!modLogger) {
+      // create new
+      modLogger = {
+        logger: logger,
+        moduleName: modName,
+        log: (logType: LOGTYPES, fnName: string, msg: string | Error, detailMsg?: string, task?: string) => {
+          logger.log(logType, modLogger!.moduleName, fnName, msg, detailMsg, task);
+
+          return modLogger!;
+        },
+        logDebug: (fnName: string, msg: string | Error, detailMsg?: string, task?: string) => {
+          logger.logDebug(modLogger!.moduleName, fnName, msg, detailMsg, task);
+
+          return modLogger!;
+        },
+        logInfo: (fnName: string, msg: string | Error, detailMsg?: string, task?: string) => {
+          logger.logInfo(modLogger!.moduleName, fnName, msg, detailMsg, task);
+
+          return modLogger!;
+        },
+        logWarning: (fnName: string, msg: string | Error, detailMsg?: string, task?: string) => {
+          logger.logWarning(modLogger!.moduleName, fnName, msg, detailMsg, task);
+
+          return modLogger!;
+        },
+        logError: (fnName: string, msg: string | Error, detailMsg?: string, task?: string) => {
+          logger.logError(modLogger!.moduleName, fnName, msg, detailMsg, task);
+
+          return modLogger!;
+        },
+        logCriticalError: (fnName: string, msg: string | Error, detailMsg?: string, task?: string) => {
+          logger.logCriticalError(modLogger!.moduleName, fnName, msg, detailMsg, task);
+
+          return modLogger!;
+        },
+        getLoggerForFn: (fnName: string) => {
+          return fnWrappers.getLogger(modLogger!.moduleName, fnName);
+        },
+        createFnLogger: (fnName: string) => {
+          return fnWrappers.createLogger(modLogger!.moduleName, fnName);
+        }
+      };
+
+      // add to collection
+      modWrappers.coll.set(collKey, modLogger!);
+    }
+
+    return modLogger!;
+  },
+  getLogger: (modName: string, fnName?: string) => {
+    // build key
+    return modWrappers.coll.get(modWrappers.buildCollKey(modName, fnName));
+  }
+};
+
+// collections of function wrappers
+const fnWrappers: LoggerCollection<LoggerForFn> = {
+  coll: new Map(),
+  buildCollKey: (modName: string, fnName?: string) => {
+    // validate
+    fnName = (fnName || '').trim();
+
+    if (fnName === '') {
+      throw new Error(createMessage('Missing function name'));
+    }
+
+    // build key
+    return `${modWrappers.buildCollKey(modName)}|FN[${fnName.toUpperCase()}]`;
+  },
+  createLogger: (modName: string, fnName?: string) => {
+    // get module logger
+    const modLogger = modWrappers.getLogger(modName, fnName);
+
+    if (!modLogger) {
+      throw new Error(createMessage(`No logger exist for module ${modName}`));
+    }
+
+    // build key
+    const collKey = fnWrappers.buildCollKey(modName, fnName);
+
+    // get existing
+    let fnLogger = fnWrappers.coll.get(collKey);
+
+    if (!fnLogger) {
+      fnLogger = {
+        logger: logger,
+        moduleLogger: modLogger!,
+        fnName: fnName!.trim(),
+        log: (logType: LOGTYPES,  msg: string | Error, detailMsg?: string, task?: string) => {
+          logger.log(logType, modName, fnLogger!.fnName, msg, detailMsg, task);
+
+          return fnLogger!;
+        },
+        logDebug: (msg: string | Error, detailMsg?: string, task?: string) => {
+          logger.logDebug(modName, fnLogger!.fnName, msg, detailMsg, task);
+
+          return fnLogger!;
+        },
+        logInfo: (msg: string | Error, detailMsg?: string, task?: string) => {
+          logger.logInfo(modName, fnLogger!.fnName, msg, detailMsg, task);
+
+          return fnLogger!;
+        },
+        logWarning: (msg: string | Error, detailMsg?: string, task?: string) => {
+          logger.logWarning(modName, fnLogger!.fnName, msg, detailMsg, task);
+
+          return fnLogger!;
+        },
+        logError: (msg: string | Error, detailMsg?: string, task?: string) => {
+          logger.logError(modName, fnLogger!.fnName, msg, detailMsg, task);
+
+          return fnLogger!;
+        },
+        logCriticalError: (msg: string | Error, detailMsg?: string, task?: string) => {
+          logger.logCriticalError(modName, fnLogger!.fnName, msg, detailMsg, task);
+
+          return fnLogger!;
+        }
+      };
+
+      fnWrappers.coll.set(collKey, fnLogger);
+    }
+
+    return fnLogger!;
+  },
+  getLogger: (modName: string, fnName?: string) => {
+    return fnWrappers.coll.get(fnWrappers.buildCollKey(modName, fnName));
+  }
+};
 
 /**
  * Logger module
@@ -234,6 +387,18 @@ const logger: Logger = {
     loggerOutput = fn || defLogger;
 
     return logger;
+  },
+  getLoggerForModule: (modName: string) => {
+    return modWrappers.getLogger(modName);
+  },
+  getLoggerForFn: (modName: string, fnName: string) => {
+    return fnWrappers.getLogger(modName, fnName);
+  },
+  createModuleLogger: (modName: string) => {
+    return modWrappers.createLogger(modName);
+  },
+  createFnLogger: (modName: string, fnName: string) => {
+    return fnWrappers.createLogger(modName, fnName);
   }
 };
 

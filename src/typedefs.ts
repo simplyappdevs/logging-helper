@@ -40,13 +40,58 @@ export type LoggerOutput = (entry: LogEntry) => void;
  * Logger definition
  */
 export interface Logger {
-  init: (appName: string) => Logger;      // initialize logger
-  appName: () => string;                // readonly application name
+  init: (appName: string) => Logger;                          // initialize logger
+  appName: () => string;                                      // readonly application name
+  setLoggerOutput: (fn: LoggerOutput | null) => Logger;       // override default logger output
   log: (logType: LOGTYPES, modName: string, fnName: string, msg: string | Error, detailMsg?: string, task?: string) => Logger;
   logDebug: (modName: string, fnName: string, msg: string | Error, detailMsg?: string, task?: string) => Logger;
   logInfo: (modName: string, fnName: string, msg: string | Error, detailMsg?: string, task?: string) => Logger;
   logWarning: (modName: string, fnName: string, msg: string | Error, detailMsg?: string, task?: string) => Logger;
   logError: (modName: string, fnName: string, msg: string | Error, detailMsg?: string, task?: string) => Logger;
   logCriticalError: (modName: string, fnName: string, msg: string | Error, detailMsg?: string, task?: string) => Logger;
-  setLoggerOutput: (fn: LoggerOutput | null) => Logger;
+  getLoggerForModule: (modName: string) => LoggerForModule | undefined;
+  getLoggerForFn: (modName: string, fnName: string) => LoggerForFn | undefined;
+  createModuleLogger: (modName: string) => LoggerForModule;
+  createFnLogger: (modName: string, fnName: string) => LoggerForFn;
+}
+
+/**
+ * Logger object for module name HOC
+ */
+export interface LoggerForModule {
+  readonly logger: Logger;
+  readonly moduleName: string;
+  log: (logType: LOGTYPES, fnName: string, msg: string | Error, detailMsg?: string, task?: string) => LoggerForModule;
+  logDebug: (fnName: string, msg: string | Error, detailMsg?: string, task?: string) => LoggerForModule;
+  logInfo: (fnName: string, msg: string | Error, detailMsg?: string, task?: string) => LoggerForModule;
+  logWarning: (fnName: string, msg: string | Error, detailMsg?: string, task?: string) => LoggerForModule;
+  logError: (fnName: string, msg: string | Error, detailMsg?: string, task?: string) => LoggerForModule;
+  logCriticalError: (fnName: string, msg: string | Error, detailMsg?: string, task?: string) => LoggerForModule;
+  getLoggerForFn: (fnName: string) => LoggerForFn | undefined;
+  createFnLogger: (fnName: string) => LoggerForFn;
+}
+
+/**
+ * Logger object for function name HOC
+ */
+export interface LoggerForFn {
+  readonly logger: Logger;
+  readonly moduleLogger: LoggerForModule;
+  readonly fnName: string;
+  log: (logType: LOGTYPES, msg: string | Error, detailMsg?: string, task?: string) => LoggerForFn;
+  logDebug: (msg: string | Error, detailMsg?: string, task?: string) => LoggerForFn;
+  logInfo: (msg: string | Error, detailMsg?: string, task?: string) => LoggerForFn;
+  logWarning: (msg: string | Error, detailMsg?: string, task?: string) => LoggerForFn;
+  logError: (msg: string | Error, detailMsg?: string, task?: string) => LoggerForFn;
+  logCriticalError: (msg: string | Error, detailMsg?: string, task?: string) => LoggerForFn;
+}
+
+/**
+ * Interface for log wrappers collection
+ */
+export interface LoggerCollection<T extends LoggerForModule | LoggerForFn> {
+  readonly coll: Map<string, T>;
+  buildCollKey: (modName: string, fnName?: string) => string;
+  createLogger: (modName: string, fnName?: string) => T;
+  getLogger: (modName: string, fnName?: string) => T | undefined;
 }
