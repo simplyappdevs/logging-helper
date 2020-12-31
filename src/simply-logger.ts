@@ -59,7 +59,7 @@ let loggerOutput: LoggerOutput = defLogger;
  * Initialize module
  * @param appName Application name
  */
-const modInit = (appName: string): void => {
+const modInit = (appName: string): Logger => {
   // clean up
   appName = appName.trim().toUpperCase();
 
@@ -71,6 +71,8 @@ const modInit = (appName: string): void => {
     // set it
     loggerInfo.appName = appName;
   }
+
+  return logger;
 };
 
 /**
@@ -129,7 +131,7 @@ const createInternalLogEntry = (logType: LOGTYPES, fnName: string, msg: string |
  * @param detailMsg Detail message (optional). Auto-populated with msg.stack if msg is Error
  * @param task Task name (optional)
  */
-const log = (logType: LOGTYPES, modName: string, fnName: string, msg: string | Error, detailMsg?: string, task?: string): void => {
+const log = (logType: LOGTYPES, modName: string, fnName: string, msg: string | Error, detailMsg?: string, task?: string): Logger => {
   // validate if we can log
   if (!canLog()) {
     throw new Error('simply-logger-error: Logger has not been initialized');
@@ -137,6 +139,8 @@ const log = (logType: LOGTYPES, modName: string, fnName: string, msg: string | E
 
   const logEntry: LogEntry = createLogEntry(logType, modName, fnName, msg, detailMsg, task);
   loggerOutput(logEntry);
+
+  return logger;
 };
 
 /**
@@ -147,8 +151,10 @@ const log = (logType: LOGTYPES, modName: string, fnName: string, msg: string | E
  * @param detailMsg Detail message (optional). Auto-populated with msg.stack if msg is Error
  * @param task Task name (optional)
  */
-const logDebug = (modName: string, fnName: string, msg: string | Error, detailMsg?: string, task?: string): void => {
+const logDebug = (modName: string, fnName: string, msg: string | Error, detailMsg?: string, task?: string): Logger => {
   log(LOGTYPES.Debug, modName, fnName, msg, detailMsg, task);
+
+  return logger;
 };
 
 /**
@@ -159,8 +165,10 @@ const logDebug = (modName: string, fnName: string, msg: string | Error, detailMs
  * @param detailMsg Detail message (optional). Auto-populated with msg.stack if msg is Error
  * @param task Task name (optional)
  */
-const logInfo = (modName: string, fnName: string, msg: string | Error, detailMsg?: string, task?: string): void => {
+const logInfo = (modName: string, fnName: string, msg: string | Error, detailMsg?: string, task?: string): Logger => {
   log(LOGTYPES.Informational, modName, fnName, msg, detailMsg, task);
+
+  return logger;
 };
 
 /**
@@ -171,8 +179,10 @@ const logInfo = (modName: string, fnName: string, msg: string | Error, detailMsg
  * @param detailMsg Detail message (optional). Auto-populated with msg.stack if msg is Error
  * @param task Task name (optional)
  */
-const logWarning = (modName: string, fnName: string, msg: string | Error, detailMsg?: string, task?: string): void => {
+const logWarning = (modName: string, fnName: string, msg: string | Error, detailMsg?: string, task?: string): Logger => {
   log(LOGTYPES.Warning, modName, fnName, msg, detailMsg, task);
+
+  return logger;
 };
 
 /**
@@ -183,8 +193,10 @@ const logWarning = (modName: string, fnName: string, msg: string | Error, detail
  * @param detailMsg Detail message (optional). Auto-populated with msg.stack if msg is Error
  * @param task Task name (optional)
  */
-const logError = (modName: string, fnName: string, msg: string | Error, detailMsg?: string, task?: string): void => {
+const logError = (modName: string, fnName: string, msg: string | Error, detailMsg?: string, task?: string): Logger => {
   log(LOGTYPES.Error, modName, fnName, msg, detailMsg, task);
+
+  return logger;
 };
 
 /**
@@ -195,9 +207,16 @@ const logError = (modName: string, fnName: string, msg: string | Error, detailMs
  * @param detailMsg Detail message (optional). Auto-populated with msg.stack if msg is Error
  * @param task Task name (optional)
  */
-const logCriticalError = (modName: string, fnName: string, msg: string | Error, detailMsg?: string, task?: string): void => {
+const logCriticalError = (modName: string, fnName: string, msg: string | Error, detailMsg?: string, task?: string): Logger => {
   log(LOGTYPES.CriticalError, modName, fnName, msg, detailMsg, task);
+
+  return logger;
 };
+
+const wrapModule = () => { };
+
+const wrapFnName = () => { };
+
 
 /**
  * Logger module
@@ -213,6 +232,8 @@ const logger: Logger = {
   logCriticalError: logCriticalError,
   setLoggerOutput: (fn: LoggerOutput | null) => {
     loggerOutput = fn || defLogger;
+
+    return logger;
   }
 };
 

@@ -40,13 +40,13 @@ export type LoggerOutput = (entry: LogEntry) => void;
  * Logger definition
  */
 export interface Logger {
-  init: (appName: string) => void;      // initialize logger
+  init: (appName: string) => Logger;      // initialize logger
   appName: () => string;                // readonly application name
-  log: (logType: LOGTYPES, modName: string, fnName: string, msg: string | Error, detailMsg?: string, task?: string) => void;
-  logDebug: (modName: string, fnName: string, msg: string | Error, detailMsg?: string, task?: string) => void;
-  logInfo: (modName: string, fnName: string, msg: string | Error, detailMsg?: string, task?: string) => void;
-  logWarning: (modName: string, fnName: string, msg: string | Error, detailMsg?: string, task?: string) => void;
-  logError: (modName: string, fnName: string, msg: string | Error, detailMsg?: string, task?: string) => void;
-  logCriticalError: (modName: string, fnName: string, msg: string | Error, detailMsg?: string, task?: string) => void;
-  setLoggerOutput: (fn: LoggerOutput | null) => void;
+  log: (logType: LOGTYPES, modName: string, fnName: string, msg: string | Error, detailMsg?: string, task?: string) => Logger;
+  logDebug: (modName: string, fnName: string, msg: string | Error, detailMsg?: string, task?: string) => Logger;
+  logInfo: (modName: string, fnName: string, msg: string | Error, detailMsg?: string, task?: string) => Logger;
+  logWarning: (modName: string, fnName: string, msg: string | Error, detailMsg?: string, task?: string) => Logger;
+  logError: (modName: string, fnName: string, msg: string | Error, detailMsg?: string, task?: string) => Logger;
+  logCriticalError: (modName: string, fnName: string, msg: string | Error, detailMsg?: string, task?: string) => Logger;
+  setLoggerOutput: (fn: LoggerOutput | null) => Logger;
 }
