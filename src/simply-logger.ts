@@ -37,10 +37,19 @@ const defLogEntryInfo = {
 };
 
 /**
- * Returns whether logger is active or not
+ * Returns whether module can log or not based on internal state of this module
  */
-const canLog: () => boolean = () => {
+const isLoggable = (): boolean => {
   return (loggerInfo.appName !== '');
+};
+
+/**
+ * Throws an error if module is not ready for logging
+ */
+const canLog: () => void = () => {
+  if (!isLoggable()) {
+    throw new Error(createMessage('Logger has not been initialized'));
+  }
 };
 
 /**
@@ -58,6 +67,15 @@ const defLogger: LoggerOutput = (entry: LogEntry): void => {
  */
 const createMessage = (msg: string): string => {
   return `simply-logger-helper: ${msg}`;
+};
+
+/**
+ * Returns the duration in milliseconds
+ * @param startTS Start timestamp
+ * @param endTS End timestamp
+ */
+const calcDurationInMS = (startTS: Date, endTS: Date): number => {
+  return endTS.getTime() - startTS.getTime();
 };
 
 // function pointer to the output function
@@ -89,7 +107,11 @@ const modInit = (appName: string): Logger => {
  * @param endTS End timestamp for the log entry
  */
 const createLogEntryWithDuration = (logEntry: LogEntry, endTS: Date): LogEntryWithDuration => {
-  return {...logEntry, endTS: endTS};
+  return {
+    ...logEntry,
+    endTS: endTS,
+    durationInMS: calcDurationInMS(logEntry.entryTS, endTS)
+  };
 };
 
 /**
@@ -141,10 +163,9 @@ const createInternalLogEntry = (logType: LOGTYPES, fnName: string, msg: string |
  */
 const log = (logType: LOGTYPES, modName: string, fnName: string, msg: string | Error, detailMsg?: string, task?: string): Logger => {
   // validate if we can log
-  if (!canLog()) {
-    throw new Error(createMessage('Logger has not been initialized'));
-  }
+  canLog();
 
+  // create entry and output it
   const logEntry: LogEntry = createLogEntry(logType, modName, fnName, msg, detailMsg, task);
   loggerOutput(logEntry);
 
@@ -281,6 +302,11 @@ const modWrappers: LoggerCollection<LoggerForModule> = {
         },
         createFnLogger: (fnName: string) => {
           return fnWrappers.createLogger(modLogger!.moduleName, fnName);
+        },
+        logWithDuration: (logEntry: LogEntry) => {
+          logger.logWithDuration(logEntry);
+
+          return modLogger!;
         }
       };
 
@@ -358,10 +384,15 @@ const fnWrappers: LoggerCollection<LoggerForFn> = {
           logger.logCriticalError(modName, fnLogger!.fnName, msg, detailMsg, task);
 
           return fnLogger!;
+        },
+        logWithDuration: (logEntry: LogEntry) => {
+          logger.logWithDuration(logEntry);
+
+          return fnLogger!;
         }
       };
 
-      fnWrappers.coll.set(collKey, fnLogger);
+      fnWrappers.coll.set(collKey, fnLogger!);
     }
 
     return fnLogger!;
@@ -399,6 +430,20 @@ const logger: Logger = {
   },
   createFnLogger: (modName: string, fnName: string) => {
     return fnWrappers.createLogger(modName, fnName);
+  },
+  createLogEntry: (logType: LOGTYPES, modName: string, fnName: string, msg: string | Error, detailMsg?: string, task?: string) => {
+    canLog();
+
+    return createLogEntry(logType, modName, fnName, msg, detailMsg, task);
+  },
+  logWithDuration: (logEntry: LogEntry) => {
+    canLog();
+
+    // convert to logentry with duration
+    const logEntryDur = createLogEntryWithDuration(logEntry, new Date());
+    loggerOutput(logEntryDur);
+
+    return logger;
   }
 };
 

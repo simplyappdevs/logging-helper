@@ -28,31 +28,34 @@ export interface LogEntry {
  * Log entry with duration definition
  */
 export interface LogEntryWithDuration extends LogEntry {
-  endTS: Date;              // Log entry end timestamp in UTC
+  endTS: Date;             // Log entry end timestamp in UTC
+  durationInMS: number;    // function to calculate duration in millisecond
 }
 
 /**
  * Delegate to output log entry
  */
-export type LoggerOutput = (entry: LogEntry) => void;
+export type LoggerOutput = (entry: LogEntry | LogEntryWithDuration) => void;
 
 /**
  * Logger definition
  */
 export interface Logger {
-  init: (appName: string) => Logger;                          // initialize logger
+  readonly init: (appName: string) => Logger;                          // initialize logger
   appName: () => string;                                      // readonly application name
-  setLoggerOutput: (fn: LoggerOutput | null) => Logger;       // override default logger output
-  log: (logType: LOGTYPES, modName: string, fnName: string, msg: string | Error, detailMsg?: string, task?: string) => Logger;
-  logDebug: (modName: string, fnName: string, msg: string | Error, detailMsg?: string, task?: string) => Logger;
-  logInfo: (modName: string, fnName: string, msg: string | Error, detailMsg?: string, task?: string) => Logger;
-  logWarning: (modName: string, fnName: string, msg: string | Error, detailMsg?: string, task?: string) => Logger;
-  logError: (modName: string, fnName: string, msg: string | Error, detailMsg?: string, task?: string) => Logger;
-  logCriticalError: (modName: string, fnName: string, msg: string | Error, detailMsg?: string, task?: string) => Logger;
-  getLoggerForModule: (modName: string) => LoggerForModule | undefined;
-  getLoggerForFn: (modName: string, fnName: string) => LoggerForFn | undefined;
-  createModuleLogger: (modName: string) => LoggerForModule;
-  createFnLogger: (modName: string, fnName: string) => LoggerForFn;
+  readonly setLoggerOutput: (fn: LoggerOutput | null) => Logger;       // override default logger output
+  readonly log: (logType: LOGTYPES, modName: string, fnName: string, msg: string | Error, detailMsg?: string, task?: string) => Logger;
+  readonly logDebug: (modName: string, fnName: string, msg: string | Error, detailMsg?: string, task?: string) => Logger;
+  readonly logInfo: (modName: string, fnName: string, msg: string | Error, detailMsg?: string, task?: string) => Logger;
+  readonly logWarning: (modName: string, fnName: string, msg: string | Error, detailMsg?: string, task?: string) => Logger;
+  readonly logError: (modName: string, fnName: string, msg: string | Error, detailMsg?: string, task?: string) => Logger;
+  readonly logCriticalError: (modName: string, fnName: string, msg: string | Error, detailMsg?: string, task?: string) => Logger;
+  readonly getLoggerForModule: (modName: string) => LoggerForModule | undefined;
+  readonly getLoggerForFn: (modName: string, fnName: string) => LoggerForFn | undefined;
+  readonly createModuleLogger: (modName: string) => LoggerForModule;
+  readonly createFnLogger: (modName: string, fnName: string) => LoggerForFn;
+  readonly createLogEntry: (logType: LOGTYPES, modName: string, fnName: string, msg: string | Error, detailMsg?: string, task?: string) => Readonly<LogEntry>;
+  readonly logWithDuration: (logEntry: LogEntry) => Logger;
 }
 
 /**
@@ -61,14 +64,15 @@ export interface Logger {
 export interface LoggerForModule {
   readonly logger: Logger;
   readonly moduleName: string;
-  log: (logType: LOGTYPES, fnName: string, msg: string | Error, detailMsg?: string, task?: string) => LoggerForModule;
-  logDebug: (fnName: string, msg: string | Error, detailMsg?: string, task?: string) => LoggerForModule;
-  logInfo: (fnName: string, msg: string | Error, detailMsg?: string, task?: string) => LoggerForModule;
-  logWarning: (fnName: string, msg: string | Error, detailMsg?: string, task?: string) => LoggerForModule;
-  logError: (fnName: string, msg: string | Error, detailMsg?: string, task?: string) => LoggerForModule;
-  logCriticalError: (fnName: string, msg: string | Error, detailMsg?: string, task?: string) => LoggerForModule;
-  getLoggerForFn: (fnName: string) => LoggerForFn | undefined;
-  createFnLogger: (fnName: string) => LoggerForFn;
+  readonly log: (logType: LOGTYPES, fnName: string, msg: string | Error, detailMsg?: string, task?: string) => LoggerForModule;
+  readonly logDebug: (fnName: string, msg: string | Error, detailMsg?: string, task?: string) => LoggerForModule;
+  readonly logInfo: (fnName: string, msg: string | Error, detailMsg?: string, task?: string) => LoggerForModule;
+  readonly logWarning: (fnName: string, msg: string | Error, detailMsg?: string, task?: string) => LoggerForModule;
+  readonly logError: (fnName: string, msg: string | Error, detailMsg?: string, task?: string) => LoggerForModule;
+  readonly logCriticalError: (fnName: string, msg: string | Error, detailMsg?: string, task?: string) => LoggerForModule;
+  readonly getLoggerForFn: (fnName: string) => LoggerForFn | undefined;
+  readonly createFnLogger: (fnName: string) => LoggerForFn;
+  readonly logWithDuration: (logEntry: LogEntry) => LoggerForModule;
 }
 
 /**
@@ -78,12 +82,13 @@ export interface LoggerForFn {
   readonly logger: Logger;
   readonly moduleLogger: LoggerForModule;
   readonly fnName: string;
-  log: (logType: LOGTYPES, msg: string | Error, detailMsg?: string, task?: string) => LoggerForFn;
-  logDebug: (msg: string | Error, detailMsg?: string, task?: string) => LoggerForFn;
-  logInfo: (msg: string | Error, detailMsg?: string, task?: string) => LoggerForFn;
-  logWarning: (msg: string | Error, detailMsg?: string, task?: string) => LoggerForFn;
-  logError: (msg: string | Error, detailMsg?: string, task?: string) => LoggerForFn;
-  logCriticalError: (msg: string | Error, detailMsg?: string, task?: string) => LoggerForFn;
+  readonly log: (logType: LOGTYPES, msg: string | Error, detailMsg?: string, task?: string) => LoggerForFn;
+  readonly logDebug: (msg: string | Error, detailMsg?: string, task?: string) => LoggerForFn;
+  readonly logInfo: (msg: string | Error, detailMsg?: string, task?: string) => LoggerForFn;
+  readonly logWarning: (msg: string | Error, detailMsg?: string, task?: string) => LoggerForFn;
+  readonly logError: (msg: string | Error, detailMsg?: string, task?: string) => LoggerForFn;
+  readonly logCriticalError: (msg: string | Error, detailMsg?: string, task?: string) => LoggerForFn;
+  readonly logWithDuration: (logEntry: LogEntry) => LoggerForFn;
 }
 
 /**

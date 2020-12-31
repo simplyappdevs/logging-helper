@@ -6,7 +6,7 @@ import {BonMockInterface} from '../src/__mocks__/browser-or-node-helper';
  /**
  * App imports
  */
-import {LogEntry, Logger, LoggerOutput, LOGTYPES} from '../src';
+import {LogEntry, Logger, LoggerOutput, LOGTYPES, LogEntryWithDuration} from '../src';
 
 let logger: Logger;
 
@@ -14,7 +14,7 @@ let logger: Logger;
  * Output logger mock
  * @param entry Log entry
  */
-const mockLoggerOutput: LoggerOutput = (entry: LogEntry) => {
+const mockLoggerOutput: LoggerOutput = (entry: LogEntry | LogEntryWithDuration) => {
   console.info(`Mock Logger:\n${JSON.stringify(entry, null, 2)}`);
 };
 
@@ -44,6 +44,10 @@ describe('Logger', () => {
       // spy on console
       consoleLogSpy = jest.spyOn(console, 'log');
       mockLoggerSpy = jest.spyOn(mocks, 'loggerOutput');
+    });
+
+    afterAll(() => {
+      jest.useRealTimers();
     });
 
     beforeEach(() => {
@@ -670,6 +674,81 @@ describe('Logger', () => {
 
           expect(fnLogger1).toEqual(fnLogger2);
         });
+      });
+    });
+
+    /**
+     * Log Entry
+     */
+    describe('Log Entry', () => {
+      test('create', () => {
+        expect(() => {
+          logger.createLogEntry(LOGTYPES.Informational, 'mod-test', 'mod-test-fn', 'First Log');
+        }).toThrow('simply-logger-helper: Logger has not been initialized');
+
+        logger.init(appName);
+
+        const entry = logger.createLogEntry(LOGTYPES.Informational, 'mod-test', 'mod-test-fn', 'First Log');
+        expect(entry).toBeDefined();
+        expect(entry).toEqual(expect.objectContaining({
+          appName: appName.toUpperCase(),
+          modName: 'mod-test',
+          fnName: 'mod-test-fn',
+          logType: LOGTYPES.Informational,
+          friendlyMsg: 'First Log'
+        }));
+      });
+
+      test('duration', () => {
+        expect(() => {
+          logger.createLogEntry(LOGTYPES.Error, 'mod-test', 'mod-test-fn', 'First Log');
+        }).toThrow('simply-logger-helper: Logger has not been initialized');
+
+        logger.init(appName);
+        logger.setLoggerOutput(mocks.loggerOutput);
+
+        const startTS = new Date();           // snapshot timestamp
+        const endTS = new Date(startTS.getTime() + 10); // advanced by 10ms
+
+        // fake it
+        jest.useFakeTimers('modern');
+
+        jest.setSystemTime(startTS);
+
+        const entry = logger.createLogEntry(LOGTYPES.Error, 'mod-test', 'mod-test-fn', 'First Log');
+
+        jest.setSystemTime(endTS)
+
+        // logger level
+        logger.logWithDuration(entry);
+        expect(mockLoggerSpy).toHaveBeenCalledTimes(1);
+        expect(mockLoggerSpy).toHaveBeenCalledWith(expect.objectContaining({
+          entryTS: startTS,
+          endTS: endTS,
+          durationInMS: 10
+        }));
+
+        // module logger level
+        const modlogger = logger.createModuleLogger('mod-test');
+
+        modlogger.logWithDuration(entry);
+        expect(mockLoggerSpy).toHaveBeenCalledTimes(2);
+        expect(mockLoggerSpy).toHaveBeenCalledWith(expect.objectContaining({
+          entryTS: startTS,
+          endTS: endTS,
+          durationInMS: 10
+        }));
+
+        // module logger level
+        const fnLogger = modlogger.createFnLogger('mod-test-fn');
+
+        fnLogger.logWithDuration(entry);
+        expect(mockLoggerSpy).toHaveBeenCalledTimes(3);
+        expect(mockLoggerSpy).toHaveBeenCalledWith(expect.objectContaining({
+          entryTS: startTS,
+          endTS: endTS,
+          durationInMS: 10
+        }));
       });
     });
   });
