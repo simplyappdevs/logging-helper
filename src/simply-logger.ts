@@ -102,19 +102,6 @@ const modInit = (appName: string): Logger => {
 };
 
 /**
- * Appends end timestamp to a log entry
- * @param logEntry Log entry without timestamp
- * @param endTS End timestamp for the log entry
- */
-const createLogEntryWithDuration = (logEntry: LogEntry, endTS: Date): LogEntryWithDuration => {
-  return {
-    ...logEntry,
-    endTS: endTS,
-    durationInMS: calcDurationInMS(logEntry.entryTS, endTS)
-  };
-};
-
-/**
  * Creates log entry
  * @param logType Log type
  * @param modName Module name
@@ -134,6 +121,19 @@ const createLogEntry = (logType: LOGTYPES, modName: string, fnName: string, msg:
     detailMsg: detailMsg ? detailMsg : msg instanceof Error ? msg.stack! : '',
     durationIsMS: undefined,
     task: task
+  };
+};
+
+/**
+ * Appends end timestamp to a log entry
+ * @param logEntry Log entry without timestamp
+ * @param endTS End timestamp for the log entry
+ */
+const createLogEntryWithDuration = (logEntry: LogEntry, endTS: Date): LogEntryWithDuration => {
+  return {
+    ...logEntry,
+    endTS: endTS,
+    durationInMS: calcDurationInMS(logEntry.entryTS, endTS)
   };
 };
 

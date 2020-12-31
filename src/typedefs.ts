@@ -35,7 +35,7 @@ export interface LogEntryWithDuration extends LogEntry {
 /**
  * Delegate to output log entry
  */
-export type LoggerOutput = (entry: LogEntry | LogEntryWithDuration) => void;
+export type LoggerOutput = (entry: Readonly<LogEntry> | Readonly<LogEntryWithDuration>) => void;
 
 /**
  * Logger definition
