@@ -96,7 +96,7 @@ export interface LoggerForFn {
  */
 export interface LoggerCollection<T extends LoggerForModule | LoggerForFn> {
   readonly coll: Map<string, T>;
-  buildCollKey: (modName: string, fnName?: string) => string;
-  createLogger: (modName: string, fnName?: string) => T;
-  getLogger: (modName: string, fnName?: string) => T | undefined;
+  buildCollKey: (this: LoggerCollection<T>, modName: string, fnName?: string) => string;
+  createLogger: (this: LoggerCollection<T>, modName: string, fnName?: string) => T;
+  getLogger: (this: LoggerCollection<T>, modName: string, fnName?: string) => T | undefined;
 }

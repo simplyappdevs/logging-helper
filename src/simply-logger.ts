@@ -245,7 +245,7 @@ const logCriticalError = (modName: string, fnName: string, msg: string | Error, 
 // collection of module level loggers
 const modWrappers: LoggerCollection<LoggerForModule> = {
   coll: new Map(),
-  buildCollKey: (modName: string, fnName?: string) => {
+  buildCollKey: function (modName: string, fnName?: string) {
     // validate
     modName = modName.trim();
     fnName = fnName || '';      // we are ignoring this parameter
@@ -256,11 +256,11 @@ const modWrappers: LoggerCollection<LoggerForModule> = {
 
     return `MOD[${modName.toUpperCase()}]`;
   },
-  createLogger: (modName: string, fnName?: string) => {
+  createLogger: function(modName: string, fnName?: string) {
     // get existing
-    const collKey = modWrappers.buildCollKey(modName, fnName);
+    const collKey = this.buildCollKey(modName, fnName);
 
-    let modLogger = modWrappers.coll.get(collKey);
+    let modLogger = this.coll.get(collKey);
 
     if (!modLogger) {
       // create new
@@ -311,21 +311,21 @@ const modWrappers: LoggerCollection<LoggerForModule> = {
       };
 
       // add to collection
-      modWrappers.coll.set(collKey, modLogger!);
+      this.coll.set(collKey, modLogger!);
     }
 
     return modLogger!;
   },
-  getLogger: (modName: string, fnName?: string) => {
+  getLogger: function(modName: string, fnName?: string) {
     // build key
-    return modWrappers.coll.get(modWrappers.buildCollKey(modName, fnName));
+    return this.coll.get(this.buildCollKey(modName, fnName));
   }
 };
 
 // collections of function wrappers
 const fnWrappers: LoggerCollection<LoggerForFn> = {
   coll: new Map(),
-  buildCollKey: (modName: string, fnName?: string) => {
+  buildCollKey: function(modName: string, fnName?: string) {
     // validate
     fnName = (fnName || '').trim();
 
@@ -336,7 +336,7 @@ const fnWrappers: LoggerCollection<LoggerForFn> = {
     // build key
     return `${modWrappers.buildCollKey(modName)}|FN[${fnName.toUpperCase()}]`;
   },
-  createLogger: (modName: string, fnName?: string) => {
+  createLogger: function(modName: string, fnName?: string) {
     // get module logger
     const modLogger = modWrappers.getLogger(modName, fnName);
 
@@ -345,10 +345,10 @@ const fnWrappers: LoggerCollection<LoggerForFn> = {
     }
 
     // build key
-    const collKey = fnWrappers.buildCollKey(modName, fnName);
+    const collKey = this.buildCollKey(modName, fnName);
 
     // get existing
-    let fnLogger = fnWrappers.coll.get(collKey);
+    let fnLogger = this.coll.get(collKey);
 
     if (!fnLogger) {
       fnLogger = {
@@ -392,13 +392,13 @@ const fnWrappers: LoggerCollection<LoggerForFn> = {
         }
       };
 
-      fnWrappers.coll.set(collKey, fnLogger!);
+      this.coll.set(collKey, fnLogger!);
     }
 
     return fnLogger!;
   },
-  getLogger: (modName: string, fnName?: string) => {
-    return fnWrappers.coll.get(fnWrappers.buildCollKey(modName, fnName));
+  getLogger: function(modName: string, fnName?: string) {
+    return this.coll.get(this.buildCollKey(modName, fnName));
   }
 };
 
