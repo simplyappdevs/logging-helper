@@ -1,12 +1,12 @@
 /**
- * Log types definition
+ * Log types definition (BITWISE)
  */
 export enum LOGTYPES {
-  Debug = 0,            // Debugging information (ex: Received acctID=1 roleID=2345)
-  Informational = 1,    // Informational (ex: Application started up listening on port 25 on host localhost)
-  Warning = 2,          // Warnings (ex: Configuration value for throwOnDefault is not set, defaulting to False)
-  Error = 3,            // Error encountered but application may continue (ex: Unable to retrieve GIT users due to "Host cannot be resolved")
-  CriticalError = 4     // Critical error encounter and application is terminated (ex: Application shutting down due to "Unable to bind to port 25")
+  Debug = 0,                 // Debugging information (ex: Received acctID=1 roleID=2345)
+  Informational = 1 << 0,    // Informational (ex: Application started up listening on port 25 on host localhost)
+  Warning = 1 << 1,          // Warnings (ex: Configuration value for throwOnDefault is not set, defaulting to False)
+  Error = 1 << 2,            // Error encountered but application may continue (ex: Unable to retrieve GIT users due to "Host cannot be resolved")
+  CriticalError = 1 << 3     // Critical error encounter and application is terminated (ex: Application shutting down due to "Unable to bind to port 25")
 }
 
 /**
@@ -99,4 +99,13 @@ export interface LoggerCollection<T extends LoggerForModule | LoggerForFn> {
   buildCollKey: (this: LoggerCollection<T>, modName: string, fnName?: string) => string;          // build key for a module or a function in a module
   createLogger: (this: LoggerCollection<T>, modName: string, fnName?: string) => T;               // create logger for a module or a function in a module
   getLogger: (this: LoggerCollection<T>, modName: string, fnName?: string) => T | undefined;      // get logger for a module or function in a module
+}
+
+/**
+ * Interface for log helper configurations
+ */
+export interface LogHelperConfiguration {
+  enabled: boolean;
+  logLevels: LOGTYPES;
+  useColors: boolean;
 }

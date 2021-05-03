@@ -191,13 +191,13 @@ describe('Logger', () => {
         }));
       });
 
-      test('log eror', () => {
+      test('log error', () => {
         logger.init(appName);
         logger.setLoggerOutput(mocks.loggerOutput);
 
         logger.logError('unittest', 'test()', 'Log error');
         expect(mockLoggerSpy).toBeCalledWith(expect.objectContaining({
-          'logType': 3,
+          'logType': 4,
           'friendlyMsg': 'Log error',
           'detailMsg': '',
           'appName': appName.toUpperCase(),
@@ -212,7 +212,7 @@ describe('Logger', () => {
 
         logger.logCriticalError('unittest', 'test()', 'Log critical error');
         expect(mockLoggerSpy).toBeCalledWith(expect.objectContaining({
-          'logType': 4,
+          'logType': 8,
           'friendlyMsg': 'Log critical error',
           'detailMsg': '',
           'appName': appName.toUpperCase(),
@@ -221,7 +221,7 @@ describe('Logger', () => {
         }));
       });
 
-      test('log with Error', () => {
+      test('log with error', () => {
         logger.init(appName);
         logger.setLoggerOutput(mocks.loggerOutput);
 
@@ -230,7 +230,7 @@ describe('Logger', () => {
         } catch (e) {
           logger.logError('unittest', 'test()', e);
           expect(mockLoggerSpy).toBeCalledWith(expect.objectContaining({
-            'logType': 3,
+            'logType': 4,
             'friendlyMsg': e.message,
             'detailMsg': e.stack,
             'appName': appName.toUpperCase(),
