@@ -2,8 +2,23 @@
   "name": "@simplyappdevs/logging-helper",
   "version": "1.0.0",
   "description": "Logging helper for Javascript/Typescript",
-  "main": "index.js",
   "type": "module",
+  "main": "dist/esm/index.js",
+  "module": "dist/esm/index.js",
+  "typings": "dist/esm/index.d.ts",
+  "exports": {
+    "import": "./dist/esm/index.js",
+    "require": "./dist/index.js",
+    "node": "./dist/esm/index.js",
+    "default": "./dist/index.js"
+  },
+  "files": [
+    "dist",
+    "src",
+    "examples",
+    "README.md",
+    "wrapper.mjs"
+  ],
   "dependencies": {
     "browser-or-node": "^1.3.0"
   },
@@ -36,7 +51,7 @@
     "typescript",
     "javascript"
   ],
-  "author": "Simply AppDevs",
+  "author": "SimplyAppDevs",
   "license": "GPL-3.0",
   "bugs": {
     "url": "https://github.com/simplyappdevs/logging-helper/issues"
