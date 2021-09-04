@@ -1,6 +1,6 @@
 {
   "name": "@simplyappdevs/logging-helper",
-  "version": "1.0.2",
+  "version": "1.0.3",
   "description": "Logging helper for Javascript/Typescript",
   "type": "module",
   "main": "dist/esm/index.js",
