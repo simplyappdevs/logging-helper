@@ -228,15 +228,17 @@ describe('Logger', () => {
         try {
           throw new Error('Logging test error');
         } catch (e) {
-          logger.logError('unittest', 'test()', e);
-          expect(mockLoggerSpy).toBeCalledWith(expect.objectContaining({
-            'logType': 4,
-            'friendlyMsg': e.message,
-            'detailMsg': e.stack,
-            'appName': appName.toUpperCase(),
-            'modName': 'unittest',
-            'fnName': 'test()'
-          }));
+          if (e instanceof Error) {
+            logger.logError('unittest', 'test()', e);
+            expect(mockLoggerSpy).toBeCalledWith(expect.objectContaining({
+              'logType': 4,
+              'friendlyMsg': e.message,
+              'detailMsg': e.stack,
+              'appName': appName.toUpperCase(),
+              'modName': 'unittest',
+              'fnName': 'test()'
+            }));
+          }
         }
       });
 
