@@ -119,7 +119,6 @@ const createLogEntry = (logType: LOGTYPES, modName: string, fnName: string, msg:
     entryTS: new Date(),
     friendlyMsg: msg instanceof Error ? msg.message : msg,
     detailMsg: detailMsg ? detailMsg : msg instanceof Error ? msg.stack! : '',
-    durationIsMS: undefined,
     task: task
   };
 };
@@ -303,6 +302,9 @@ const modWrappers: LoggerCollection<LoggerForModule> = {
         createFnLogger: (fnName: string) => {
           return fnWrappers.createLogger(modLogger!.moduleName, fnName);
         },
+        createLogEntry: (logType: LOGTYPES, fnName: string, msg: string | Error, detailMsg?: string, task?: string): Readonly<LogEntry> => {
+          return logger.createLogEntry(logType, modLogger!.moduleName, fnName, msg, detailMsg, task);
+        },
         logWithDuration: (logEntry: LogEntry) => {
           logger.logWithDuration(logEntry);
 
@@ -384,6 +386,9 @@ const fnWrappers: LoggerCollection<LoggerForFn> = {
           logger.logCriticalError(modName, fnLogger!.fnName, msg, detailMsg, task);
 
           return fnLogger!;
+        },
+        createLogEntry: (logType: LOGTYPES, msg: string | Error, detailMsg?: string, task?: string): Readonly<LogEntry> => {
+          return logger.createLogEntry(logType, modName, fnLogger!.fnName, msg, detailMsg, task);
         },
         logWithDuration: (logEntry: LogEntry) => {
           logger.logWithDuration(logEntry);

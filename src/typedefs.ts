@@ -21,7 +21,6 @@ export interface LogEntry {
   friendlyMsg: string;      // Log friendly/brief message
   detailMsg?: string;       // Log detail message (ex: StackTrace from Error)
   task?: string;            // Step/task being executed
-  durationIsMS?: number;    // Duration taken in millisecond
 }
 
 /**
@@ -72,6 +71,7 @@ export interface LoggerForModule {
   readonly logCriticalError: (fnName: string, msg: string | Error, detailMsg?: string, task?: string) => LoggerForModule;           // log critical error statements
   readonly getLoggerForFn: (fnName: string) => LoggerForFn | undefined;   // get logger for a function in this module
   readonly createFnLogger: (fnName: string) => LoggerForFn;               // create logger for a function in this module
+  readonly createLogEntry: (logType: LOGTYPES, fnName: string, msg: string | Error, detailMsg?: string, task?: string) => Readonly<LogEntry>;  // create a log entry
   readonly logWithDuration: (logEntry: LogEntry) => LoggerForModule;      // log an entry with duration value
 }
 
@@ -88,6 +88,7 @@ export interface LoggerForFn {
   readonly logWarning: (msg: string | Error, detailMsg?: string, task?: string) => LoggerForFn;                 // log warning statements
   readonly logError: (msg: string | Error, detailMsg?: string, task?: string) => LoggerForFn;                   // log error statements
   readonly logCriticalError: (msg: string | Error, detailMsg?: string, task?: string) => LoggerForFn;           // log critical error statements
+  readonly createLogEntry: (logType: LOGTYPES, msg: string | Error, detailMsg?: string, task?: string) => Readonly<LogEntry>;  // create a log entry
   readonly logWithDuration: (logEntry: LogEntry) => LoggerForFn;          // log an entry with duration value
 }
 

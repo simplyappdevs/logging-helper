@@ -7,6 +7,7 @@ import {BonMockInterface} from '../src/__mocks__/browser-or-node-helper';
  * App imports
  */
 import {LogEntry, Logger, LoggerOutput, LOGTYPES, LogEntryWithDuration} from '../src';
+import {start} from 'repl';
 
 let logger: Logger;
 
@@ -699,6 +700,61 @@ describe('Logger', () => {
           logType: LOGTYPES.Informational,
           friendlyMsg: 'First Log'
         }));
+      });
+
+      test('create entry from modlogger', () => {
+        logger.init(appName);
+
+        const mLogger = logger.createModuleLogger('mod-test');
+
+        const startTS = new Date();           // snapshot timestamp
+
+        const obj = {
+          "appName": "LOGGERTEST",
+          "detailMsg": "",
+          "entryTS": startTS,
+          "fnName": "mod-test-fn",
+          "friendlyMsg": "First Log",
+          "logType": 1,
+          "modName": "mod-test",
+          "task": undefined,
+        };
+
+        // fake it
+        jest.useFakeTimers('modern');
+        jest.setSystemTime(startTS);
+
+        const entry = mLogger.createLogEntry(LOGTYPES.Informational, 'mod-test-fn', 'First Log');
+
+        expect(entry).toEqual(obj);
+      });
+
+      test('create entry from fnLogger', () => {
+        logger.init(appName);
+
+        const mLogger = logger.createModuleLogger('mod-test');
+        const fnLogger = mLogger.createFnLogger('mod-test-fn');
+
+        const startTS = new Date();           // snapshot timestamp
+
+        const obj = {
+          "appName": "LOGGERTEST",
+          "detailMsg": "",
+          "entryTS": startTS,
+          "fnName": "mod-test-fn",
+          "friendlyMsg": "First Log",
+          "logType": 1,
+          "modName": "mod-test",
+          "task": undefined,
+        };
+
+        // fake it
+        jest.useFakeTimers('modern');
+        jest.setSystemTime(startTS);
+
+        const entry = fnLogger.createLogEntry(LOGTYPES.Informational, 'First Log');
+
+        expect(entry).toEqual(obj);
       });
 
       test('duration', () => {

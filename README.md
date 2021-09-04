@@ -52,7 +52,7 @@ export interface LogEntryWithDuration extends LogEntry {
 
 This logger helper module does not actually output the log entries. It expects a logger output to be assigned via `setLoggerOutput()` function available from the main logger interface.
 
-```json
+```javascript
 export type LoggerOutput = (entry: Readonly<LogEntry> | Readonly<LogEntryWithDuration>) => void;
 ```
 
@@ -74,7 +74,7 @@ export type LoggerOutput = (entry: Readonly<LogEntry> | Readonly<LogEntryWithDur
 
 ```json
 {
-  "name": "nodejs-prompt-example",
+  "name": "my-awesome-app",
   "version": "1.0.0",
   "description": "My Awesome App",
   "main": "index.js",
