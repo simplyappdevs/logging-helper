@@ -28,6 +28,7 @@
   "exclude": [
     "__tests__/**/*",
     "__mocks__/**/*",
+    "src/**/__mocks__/**/*",
     "node_modules",
     "examples",
     "dist"
