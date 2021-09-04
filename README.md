@@ -15,10 +15,7 @@
 
 ## Log Entry
 
-```json
-/**
- * Log entry definition
- */
+```javascript
 export interface LogEntry {
   logType: LOGTYPES;        // Log type
   appName: string;          // Application name
@@ -28,6 +25,11 @@ export interface LogEntry {
   friendlyMsg: string;      // Log friendly/brief message
   detailMsg?: string;       // Log detail message (ex: StackTrace from Error)
   task?: string;            // Step/task being executed
+  durationIsMS?: number;    // Duration taken in millisecond
+}
+
+export interface LogEntryWithDuration extends LogEntry {
+  endTS: Date;             // Log entry end timestamp in UTC
   durationIsMS?: number;    // Duration taken in millisecond
 }
 ```
