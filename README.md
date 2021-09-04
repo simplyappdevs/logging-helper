@@ -44,70 +44,62 @@ export interface LogEntry {
 
 ### Function logger
 
-> High-order logger on top of module logger to ping the function name
+> High-order logger on top of module logger to pin the function name
 
 ## Log Output Override
 
 This logger helper module does not actually output the log entries. It expects a logger output to be assigned via `setLoggerOutput()` function available from the main logger interface.
 
 ```json
-/**
- * Delegate to output log entry
- */
 export type LoggerOutput = (entry: Readonly<LogEntry> | Readonly<LogEntryWithDuration>) => void;
 ```
 
 ## Example
 
-> To be added in the future
+> [https://github.com/simplyappdevs/logging-helper-example](https://github.com/simplyappdevs/logging-helper-example)
 
-## Configure your application for ESM
+## Reminder for ESM Application
 
-> This module has been configured as ES module (ESM). You will need to run your application with `--es-module-specifier-resolution=node` option.
+### npm exec command option
+
+> You will need to run your application with `--es-module-specifier-resolution=node` option.
 >
 > Ex: `"exec": "node --es-module-specifier-resolution=node ./dist/index.js"` for your NPM script `npm run exec`.
->
-> In addition, set the followings:
 
-## package.json
+### Configure package.json
 
-> Set type to module
+> Set type to module `"type": "module"`
 
 ```json
 {
   "name": "nodejs-prompt-example",
   "version": "1.0.0",
-  "description": "Example for @simplyappdevs/nodejs-prompt NPM package",
+  "description": "My Awesome App",
   "main": "index.js",
-  "type": "module",  // **Add this line**
+  "type": "module",
   "scripts": {
   }
-  ...
 }
 ```
 
-## tsconfig.json
+### Configure tsconfig.json
 
-> Set module to one of ECMA script
+> Set module to one of ECMA script `"module": "esnext"` in `compilerOptions` section
 
 ```json
 {
   "compilerOptions": {
-    ...
-    "module": "esnext",                     /* Specify module code generation: 'none', 'commonjs', 'amd', 'system', 'umd', 'es2015', 'es2020', or 'ESNext'. */
-    ...
+    "module": "esnext",
   }
 }
 ```
 
-> Set module resolution to `node`
+> Set module resolution to node `"moduleResolution": "node"` in `compilerOptions` section
 
 ```json
 {
   "compilerOptions": {
-    ...
-    "moduleResolution": "node",            /* Specify module resolution strategy: 'node' (Node.js) or 'classic' (TypeScript pre-1.6). */
-    ...
+    "moduleResolution": "node",
   }
 }
 ```
